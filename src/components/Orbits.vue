@@ -13,9 +13,6 @@ import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js'
 import {ref, onMounted, reactive} from 'vue'
 import SpaceObjectData from "../spaceObject"
 import Visualizer from "../visualizer";
-import {UnrealBloomPass} from "three/examples/jsm/postprocessing/UnrealBloomPass";
-import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
-import {RenderPass} from "three/examples/jsm/postprocessing/RenderPass";
 import {TextureLoader} from "three";
 
 const orbitCanvas = ref(null);
@@ -25,7 +22,7 @@ const about = reactive({
 });
 
 const scene = new THREE.Scene();
-new THREE.TextureLoader().load("src/assets/textures/skybox.jpg",
+new THREE.TextureLoader().load("images/textures/skybox.jpg",
     (t) => {
       t.mapping = THREE.EquirectangularReflectionMapping;
       t.colorSpace = THREE.DisplayP3ColorSpace;
@@ -347,7 +344,7 @@ const focusOn = (object: THREE.Object3D) => {
 
 const addSun = (sun: SpaceObjectData) => {
   // Создание сферы
-  const texture = new TextureLoader().load(`src/assets/textures/sun.jpg`)
+  const texture = new TextureLoader().load(`images/textures/sun.jpg`)
   const sphereGeometry = new THREE.SphereGeometry(sun.meanRadius * SCALE, 32, 32);
   const sphereMaterial = new THREE.MeshBasicMaterial({map: texture});
   const SunSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
