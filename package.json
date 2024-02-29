@@ -1,0 +1,21 @@
+{
+  "name": "untitled",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.161.0",
+    "@seregpie/three.text-sprite": "^3.2.0",
+    "vue": "^3.4.19"
+  },
+  "devDependencies": {
+    "@types/three": "^0.161.2",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "vite": "^5.1.4"
+  }
+}
