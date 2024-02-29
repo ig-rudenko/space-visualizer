@@ -1,5 +1,5 @@
-import SpaceObjectData from "./orbits";
-import {Line, Mesh, Sprite} from "three";
+import SpaceObjectData from "./spaceObject";
+import {Line, MathUtils, Mesh, Sprite, TextureLoader} from "three";
 import * as THREE from "three";
 
 class Visualizer {
@@ -15,11 +15,13 @@ class Visualizer {
         )
     }
 
-    getSphere(color: string, scale: number): Mesh {
+    getSphere(color: string, scale: number, textureName: string): Mesh {
+        const texture = new TextureLoader().load(`src/assets/textures/${textureName}.jpg`)
         const sphere = new THREE.Mesh(
-            new THREE.SphereGeometry(this.planet.mean_radius * scale, 32, 32),
-            new THREE.MeshBasicMaterial({color: color})
+            new THREE.SphereGeometry(this.planet.meanRadius * scale, 32, 32),
+            new THREE.MeshPhongMaterial({map: texture})
         )
+        sphere.rotation.z = MathUtils.degToRad(this.planet.obliquityToOrbit)
         sphere.position.set(...this.planet.getCurrentPosition());
         sphere.name = this.name;
         return sphere;

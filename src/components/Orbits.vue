@@ -1,7 +1,7 @@
 <template>
   <div class="relative">
     <div class="absolute about">
-      {{about.planetName}}
+      {{ about.planetName }}
     </div>
     <canvas ref="orbitCanvas"></canvas>
   </div>
@@ -11,8 +11,11 @@
 import * as THREE from 'three'
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js'
 import {ref, onMounted, reactive} from 'vue'
-import SpaceObjectData from "../orbits"
+import SpaceObjectData from "../spaceObject"
 import Visualizer from "../visualizer";
+import {UnrealBloomPass} from "three/examples/jsm/postprocessing/UnrealBloomPass";
+import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
+import {RenderPass} from "three/examples/jsm/postprocessing/RenderPass";
 
 const orbitCanvas = ref(null);
 const about = reactive({
@@ -21,13 +24,21 @@ const about = reactive({
 });
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.001, 20000);
+new THREE.TextureLoader().load("src/assets/textures/skybox.jpg",
+    (t) => {
+      t.mapping = THREE.EquirectangularReflectionMapping;
+      t.colorSpace = THREE.DisplayP3ColorSpace;
+      scene.background = t;
+    })
+const MAX_DISTANCE = 950_000_000_000 * 20
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1000, MAX_DISTANCE);
 
 let controls: OrbitControls;
+let renderer: THREE.WebGLRenderer;
 
-const planets: THREE.Mesh[] = []
+const SPACE_OBJECTS: THREE.Mesh[] = []
 const sprites: THREE.Sprite[] = []
-const SCALE = 1 / 5_000_000_00//0  // 1 / Астрономическая единица
+const SCALE = 1  // 1 / Астрономическая единица
 
 
 onMounted(() => {
@@ -50,6 +61,7 @@ onMounted(() => {
   )
   const EARTH = SpaceObjectData.fromEphemerisResult(
       `Vol. Mean Radius (km)    = 6371.01+-0.02   Mass x10^24 (kg)= 5.97219+-0.0006
+          Obliquity to orbit, deg  = 23.4392911  Sidereal orb period  = 1.0000174 y
           2460367.500000000 = A.D. 2024-Feb-27 00:00:00.0000 TDB
            EC= 1.639957426111826E-02 QR= 1.470308061012795E+08 IN= 5.157264301763251E-03
            OM= 1.680371675998003E+02 W = 2.925553473849498E+02 Tp=  2460311.368181458674
@@ -97,11 +109,28 @@ onMounted(() => {
            A = 4.524670903729584E+09 AD= 4.587688174899934E+09 PR= 5.249202935772907E+09`
   )
 
-  const renderer = new THREE.WebGLRenderer({canvas: orbitCanvas.value});
+  renderer = new THREE.WebGLRenderer({canvas: orbitCanvas.value});
   renderer.setSize(window.innerWidth, window.innerHeight);
 
+  // Создали controls
+  // controls = <OrbitControls>(new AstroControls(camera, renderer.domElement));
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
+
+  controls.rotateSpeed = 1.0;
+  controls.zoomSpeed = 1.2;
+  controls.panSpeed = 0.8;
+
+  // controls.noZoom = false;
+  // controls.noPan = false;
+  // controls.staticMoving = true;
+  // controls.dynamicDampingFactor = 0.3;
+
+  // При желании можно по колдовать с настройками, а можно этого не делать.
+  // controls готов к работе и без этого.
+
+  // controls = new OrbitControls(camera, renderer.domElement);
+  // controls.enableDamping = true;
 
   MERCURY.setScale(SCALE);
   VENUS.setScale(SCALE);
@@ -126,7 +155,7 @@ onMounted(() => {
     controls.update();
     renderer.render(scene, camera);
 
-    planets.forEach(p => {
+    SPACE_OBJECTS.forEach(p => {
       let scaleFactor = 28;
       if (p.children.length > 0) {
         let sprite = p.children[0];
@@ -148,14 +177,14 @@ onMounted(() => {
   const neptuneOrbit = NeptuneVisualizer.getOrbit("#3259f3")
   scene.add(neptuneOrbit)
 
-  const mercurySphere = MercuryVisualizer.getSphere("#838383", SCALE)
-  const venusSphere = VenusVisualizer.getSphere("#f39932", SCALE)
-  const earthSphere = EarthVisualizer.getSphere("#3289f3", SCALE)
-  const marsSphere = MarsVisualizer.getSphere("#f33232", SCALE)
-  const jupiterSphere = JupiterMarsVisualizer.getSphere("#d37811", SCALE)
-  const saturnSphere = SaturnVisualizer.getSphere("#f3b632", SCALE)
-  const uranusSphere = UranusVisualizer.getSphere("#3293f3", SCALE)
-  const neptuneSphere = NeptuneVisualizer.getSphere("#3259f3", SCALE)
+  const mercurySphere = MercuryVisualizer.getSphere("#838383", SCALE, "mercury")
+  const venusSphere = VenusVisualizer.getSphere("#f39932", SCALE, "venus")
+  const earthSphere = EarthVisualizer.getSphere("#3289f3", SCALE, "earth")
+  const marsSphere = MarsVisualizer.getSphere("#f33232", SCALE, "mars")
+  const jupiterSphere = JupiterMarsVisualizer.getSphere("#d37811", SCALE, "jupiter")
+  const saturnSphere = SaturnVisualizer.getSphere("#f3b632", SCALE, "saturn")
+  const uranusSphere = UranusVisualizer.getSphere("#3293f3", SCALE, "uranus")
+  const neptuneSphere = NeptuneVisualizer.getSphere("#3259f3", SCALE, "neptune")
 
   addSun(SUN)
   scene.add(mercurySphere)
@@ -167,14 +196,14 @@ onMounted(() => {
   scene.add(uranusSphere)
   scene.add(neptuneSphere)
 
-  planets.push(mercurySphere)
-  planets.push(venusSphere)
-  planets.push(earthSphere)
-  planets.push(marsSphere)
-  planets.push(jupiterSphere)
-  planets.push(saturnSphere)
-  planets.push(uranusSphere)
-  planets.push(neptuneSphere)
+  SPACE_OBJECTS.push(mercurySphere)
+  SPACE_OBJECTS.push(venusSphere)
+  SPACE_OBJECTS.push(earthSphere)
+  SPACE_OBJECTS.push(marsSphere)
+  SPACE_OBJECTS.push(jupiterSphere)
+  SPACE_OBJECTS.push(saturnSphere)
+  SPACE_OBJECTS.push(uranusSphere)
+  SPACE_OBJECTS.push(neptuneSphere)
 
   const mercurySprite = EarthVisualizer.getSprite();
   const venusSprite = EarthVisualizer.getSprite();
@@ -218,7 +247,7 @@ onMounted(() => {
   const maxOrbitSize = Math.max(boundingBox.max.x - boundingBox.min.x, boundingBox.max.y - boundingBox.min.y, boundingBox.max.z - boundingBox.min.z);
   const distance = maxOrbitSize / Math.tan((Math.PI / 180) * (camera.fov / 2));
 
-  camera.position.set(orbitCenter.x, orbitCenter.y - 12000, -distance / 3);
+  camera.position.set(orbitCenter.x, orbitCenter.y + 1_200_000_000_000, -distance / 2);
   controls.target.copy(orbitCenter);
 
 
@@ -275,82 +304,61 @@ const onClick = (event) => {
   // Получение массива объектов, с которыми пересекается луч
   const intersects = raycaster.intersectObjects(scene.children);
 
-    // Если есть пересечение с объектами
-    if (intersects.length > 0) {
-      // Найти объект
-      const spriteIndex = intersects.findIndex(obj => sprites.indexOf(<THREE.Sprite>obj.object) !== -1);
-      if (spriteIndex !== -1) {
+  // Если есть пересечение с объектами
+  if (intersects.length > 0) {
+    // Найти объект
+    const spriteIndex = intersects.findIndex(obj => sprites.indexOf(<THREE.Sprite>obj.object) !== -1);
+    if (spriteIndex !== -1) {
 
-        about.planetName = intersects[spriteIndex].object.parent.name
-        console.log(intersects[spriteIndex].object.parent.name)
-
+      const spaceObject = intersects[spriteIndex].object.parent
+      if (spaceObject) {
+        about.planetName = spaceObject.name
         // Найти объект
-        const planetIndex = intersects.findIndex(obj => planets.indexOf(<THREE.Mesh>obj.object) !== -1);
-        if (planetIndex === -1) return;
-        const position = intersects[planetIndex].object.position
-
-        // Установка новой позиции камеры
-        const newCameraPosition = position.clone().add(new THREE.Vector3(0, 0, 0.1));
-        camera.position.copy(newCameraPosition);
-
-        // Направление, на которое смотрит камера
-        const lookAtDirection = position.clone().sub(newCameraPosition).normalize();
-
-        // Установка нового вектора направления для камеры
-        camera.lookAt(new THREE.Vector3().copy(position));
-
-        // Установка новой цели (центра вращения) для controls
-        controls.target.copy(position);
-
+        // const planetIndex = intersects.findIndex(obj => planets.indexOf(<THREE.Mesh>obj.object) !== -1);
+        // if (planetIndex === -1) return;
+        focusOn(spaceObject)
       }
 
     }
 
+    // Клик на космическом объекте
+    const spaceObjectIndex = intersects.findIndex(obj => SPACE_OBJECTS.indexOf(<THREE.Mesh>obj.object) !== -1);
+    if (spaceObjectIndex !== -1) {
+      focusOn(intersects[spaceObjectIndex].object)
+    }
+  }
+
 }
 
 
+const focusOn = (object: THREE.Object3D) => {
+  const position = object.position
+  // Установка новой позиции камеры
+  // const newCameraPosition = position.clone().add(new THREE.Vector3(0, 0, 9_000_000));
+  // camera.position.copy(newCameraPosition);
+  // Направление, на которое смотрит камера
+  // const lookAtDirection = position.clone().sub(newCameraPosition).normalize();
+  // Установка нового вектора направления для камеры
+  camera.lookAt(new THREE.Vector3().copy(position));
+  // Установка новой цели (центра вращения) для controls
+  controls.target.copy(position);
+}
+
 const addSun = (sun: SpaceObjectData) => {
   // Создание сферы
-  const sphereGeometry = new THREE.SphereGeometry(sun.mean_radius * SCALE, 32, 32);
-  const sphereMaterial = new THREE.MeshPhongMaterial({
-    color: 0xFFA500, // Оранжевый цвет
-    emissive: 0xFFA500, // Цвет свечения
-    side: THREE.DoubleSide, // Двусторонний материал
-    flatShading: true, // Плоский шейдинг
-  });
+  const sphereGeometry = new THREE.SphereGeometry(sun.meanRadius * SCALE, 32, 32);
+  const sphereMaterial = new THREE.MeshBasicMaterial({color: "#FFA500"});
+  const SunSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+  scene.add(SunSphere);
+  // Создаем источник света
+  const light = new THREE.PointLight(0xffffff, 99999999999999999999 * 500, MAX_DISTANCE);
 
-  const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-  scene.add(sphere);
+  // Создаем свет для темных зон
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.02); // Небольшая подсветка для всех частей сцены
+  scene.add(ambientLight);
 
-  // Создание протуберанцев
-  const protuberanceCount = 2200;
-  const protuberanceGeometry = new THREE.BufferGeometry();
-  const protuberanceVertices = new Float32Array(protuberanceCount * 3);
-
-  for (let i = 0; i < protuberanceVertices.length; i += 3) {
-    const radius = sun.mean_radius + Math.random() * 2; // Случайный радиус в пределах сферы
-    const angle = Math.random() * Math.PI * 2;
-    const x = radius * Math.cos(angle);
-    const y = radius * Math.sin(angle);
-    const z = 1; // Случайная высота для эффекта трехмерности
-
-    protuberanceVertices[i] = x;
-    protuberanceVertices[i + 1] = y;
-    protuberanceVertices[i + 2] = z;
-  }
-
-  protuberanceGeometry.setAttribute('position', new THREE.BufferAttribute(protuberanceVertices, 3));
-
-  const protuberanceMaterial = new THREE.PointsMaterial({
-    color: 0xFFA500, // Оранжевый цвет
-    size: 1, // Размер частиц
-    opacity: 0.7,
-    transparent: true,
-    blending: THREE.AdditiveBlending, // Блендинг для свечения
-  });
-
-  const protuberances = new THREE.Points(protuberanceGeometry, protuberanceMaterial);
-  sphere.add(protuberances);
+  scene.add(light);
+  SPACE_OBJECTS.push(SunSphere)
 }
 
 </script>
