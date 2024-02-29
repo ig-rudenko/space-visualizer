@@ -16,6 +16,7 @@ import Visualizer from "../visualizer";
 import {UnrealBloomPass} from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer";
 import {RenderPass} from "three/examples/jsm/postprocessing/RenderPass";
+import {TextureLoader} from "three";
 
 const orbitCanvas = ref(null);
 const about = reactive({
@@ -346,12 +347,13 @@ const focusOn = (object: THREE.Object3D) => {
 
 const addSun = (sun: SpaceObjectData) => {
   // Создание сферы
+  const texture = new TextureLoader().load(`src/assets/textures/sun.jpg`)
   const sphereGeometry = new THREE.SphereGeometry(sun.meanRadius * SCALE, 32, 32);
-  const sphereMaterial = new THREE.MeshBasicMaterial({color: "#FFA500"});
+  const sphereMaterial = new THREE.MeshBasicMaterial({map: texture});
   const SunSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
   scene.add(SunSphere);
   // Создаем источник света
-  const light = new THREE.PointLight(0xffffff, 99999999999999999999 * 500, MAX_DISTANCE);
+  const light = new THREE.PointLight(0xffffff, 250, MAX_DISTANCE, 0.15);
 
   // Создаем свет для темных зон
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.02); // Небольшая подсветка для всех частей сцены

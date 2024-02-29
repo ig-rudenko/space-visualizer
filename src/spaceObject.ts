@@ -41,8 +41,8 @@ class SpaceObjectData {
             matchOrZero(/\bTA\s*=\s*(\d.\d+E[-+]\d+)/),
             matchOrZero(/\bA\s*=\s*-?(\d.\d+E[-+]\d+)/) * 1000,
             matchOrZero(/\bPR\s*=\s*(\d.\d+E[-+]\d+)/),
-            matchOrZero(/Mean Radius\s+\(km\)\s+=\s+(\d+\.\d+)/) * 1000,
-            matchOrZero(/Obliquity to orbit,\s+deg\s+=\s+(-?\d+\.\d+)/),
+            matchOrZero(/Mean Radius\s+\(km\)\s+=\s+(\d+\.\d+|\d+)/i) * 1000,
+            matchOrZero(/Obliquity to orbit,\s+deg\s+=\s+(-?\d+\.\d+)/i),
         );
     }
 

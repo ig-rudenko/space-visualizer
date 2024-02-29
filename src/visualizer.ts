@@ -1,6 +1,7 @@
 import SpaceObjectData from "./spaceObject";
 import {Line, MathUtils, Mesh, Sprite, TextureLoader} from "three";
 import * as THREE from "three";
+import {log} from "three/examples/jsm/nodes/math/MathNode";
 
 class Visualizer {
     constructor(
@@ -18,7 +19,7 @@ class Visualizer {
     getSphere(color: string, scale: number, textureName: string): Mesh {
         const texture = new TextureLoader().load(`src/assets/textures/${textureName}.jpg`)
         const sphere = new THREE.Mesh(
-            new THREE.SphereGeometry(this.planet.meanRadius * scale, 32, 32),
+            new THREE.SphereGeometry(this.planet.meanRadius * scale, 128, 128),
             new THREE.MeshPhongMaterial({map: texture})
         )
         sphere.rotation.z = MathUtils.degToRad(this.planet.obliquityToOrbit)
