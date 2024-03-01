@@ -38,14 +38,14 @@ new THREE.TextureLoader().load("images/textures/skybox.jpg",
       scene.background = t;
     })
 const MAX_DISTANCE = 950_000_000_000 * 20
-const camera = new THREE.PerspectiveCamera(85, window.innerWidth / window.innerHeight, 0.1, MAX_DISTANCE);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.001, MAX_DISTANCE);
 
 let controls: OrbitControls;
 let renderer: THREE.WebGLRenderer;
 
 const SpaceObjectStorage = new ObjectsStorage()
 const sprites: THREE.Sprite[] = []
-const SCALE = 1  // 1 / Астрономическая единица
+const SCALE = 1 / 555555555  // 1 / Астрономическая единица
 
 
 onMounted(() => {
@@ -182,7 +182,7 @@ onMounted(() => {
   neptuneSphere.add(neptuneSprite);
 
   // Кольца
-  saturnSphere.add(createRing(70_000_000, 136_500_000, 256, 23, "saturn-ring"))
+  saturnSphere.add(createRing(70_000_000 * SCALE, 136_500_000 * SCALE, 256, 23, "saturn-ring"))
 
   // Настройка камеры
   const boundingBox = new THREE.Box3().setFromObject(neptuneOrbit);
@@ -191,7 +191,7 @@ onMounted(() => {
   const maxOrbitSize = Math.max(boundingBox.max.x - boundingBox.min.x, boundingBox.max.y - boundingBox.min.y, boundingBox.max.z - boundingBox.min.z);
   const distance = maxOrbitSize / Math.tan((Math.PI / 180) * (camera.fov / 2));
 
-  camera.position.set(orbitCenter.x, orbitCenter.y + 1_200_000_000_000, -distance / 2);
+  camera.position.set(orbitCenter.x, orbitCenter.y + 1_200_000_000_000 * SCALE, -distance / 2);
   controls.target.copy(orbitCenter);
 
   animate();
@@ -269,7 +269,7 @@ const addSun = (sun: SpaceObjectData) => {
   SunSphere.name = "Солнце"
   scene.add(SunSphere);
   // Создаем источник света
-  const light = new THREE.PointLight(0xffffff, 250, MAX_DISTANCE, 0.15);
+  const light = new THREE.PointLight(0xffffff, 10, MAX_DISTANCE, 0.1);
   scene.add(light);
 
   // Создаем свет для темных зон
