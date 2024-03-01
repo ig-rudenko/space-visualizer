@@ -29,9 +29,9 @@ class Visualizer {
         const texture = new TextureLoader().load(`images/textures/${textureName}.jpg`)
         const sphere = new THREE.Mesh(
             new THREE.SphereGeometry(this.planet.meanRadius * scale, 128, 128),
-            new THREE.MeshPhongMaterial({map: texture})
+            new THREE.MeshStandardMaterial({map: texture, transparent: false})
         )
-        sphere.rotation.z = MathUtils.degToRad(this.planet.obliquityToOrbit)
+        sphere.rotation.z = -MathUtils.degToRad(this.planet.obliquityToOrbit)
         sphere.position.set(...this.planet.getCurrentPosition());
         sphere.name = this.name;
         return sphere;
@@ -40,7 +40,7 @@ class Visualizer {
     getSprite(): Sprite {
         const material = new THREE.SpriteMaterial(
             {
-                map: new THREE.TextureLoader().load('images/circle.png')
+                map: new THREE.TextureLoader().load('images/circle.png'), transparent: true,
             });
         const sprite = new THREE.Sprite(material)
         sprite.addEventListener("click", e => {

@@ -1,11 +1,11 @@
 <script setup>
-// import Orbits from './components/Orbits.vue'
-import Saturn from './components/Saturn.vue'
+import Orbits from './components/Orbits.vue'
+// import Saturn from './components/Saturn.vue'
 </script>
 
 <template>
-<!--  <Orbits/>-->
-  <Saturn/>
+  <Orbits/>
+<!--  <Saturn/>-->
 </template>
 
 <style scoped>

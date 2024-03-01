@@ -51,12 +51,11 @@ const SCALE = 1  // 1 / Астрономическая единица
 onMounted(() => {
   renderer = new THREE.WebGLRenderer({canvas: orbitCanvas.value});
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = true;
 
   // Создали controls
   // controls = <OrbitControls>(new AstroControls(camera, renderer.domElement));
   controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
+  // controls.enableDamping = true;
 
   controls.rotateSpeed = 1.0;
   controls.zoomSpeed = 1.2;
@@ -127,6 +126,7 @@ onMounted(() => {
   const uranusSphere = UranusVisualizer.getSphere(SCALE, "uranus")
   const neptuneSphere = NeptuneVisualizer.getSphere(SCALE, "neptune")
 
+  // Добавление небесных тел
   addSun(SUN)
   scene.add(mercurySphere)
   scene.add(venusSphere)
@@ -194,48 +194,13 @@ onMounted(() => {
   camera.position.set(orbitCenter.x, orbitCenter.y + 1_200_000_000_000, -distance / 2);
   controls.target.copy(orbitCenter);
 
-
   animate();
-
-  // const onClick = (event) => {
-  //   // Определение координат мыши в нормализованных координатах (-1 to 1)
-  //   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  //   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-  //
-  //   // Пускайте луч из камеры в направлении указания мыши
-  //   raycaster.setFromCamera(mouse, camera);
-  //
-  //   // Получение массива объектов, с которыми пересекается луч
-  //   const intersects = raycaster.intersectObjects(scene.children);
-  //
-  //   // Если есть пересечение с объектами
-  //   if (intersects.length > 0) {
-  //     // Найти объект
-  //     const planetIndex = intersects.findIndex(obj => planets.indexOf(<THREE.Mesh>obj.object) !== -1);
-  //     if (planetIndex === -1) return;
-  //     const position = intersects[planetIndex].object.position
-  //
-  //     // Установка новой позиции камеры
-  //     const newCameraPosition = position.clone().add(new THREE.Vector3(0, 0, 0.1));
-  //     camera.position.copy(newCameraPosition);
-  //
-  //     // Направление, на которое смотрит камера
-  //     const lookAtDirection = position.clone().sub(newCameraPosition).normalize();
-  //
-  //     // Установка нового вектора направления для камеры
-  //     camera.lookAt(new THREE.Vector3().copy(position));
-  //
-  //     // Установка новой цели (центра вращения) для controls
-  //     controls.target.copy(position);
-  //   }
-  // };
 
   window.addEventListener('click', onClick, false);
 });
 
 
 const onClick = (event) => {
-  // Фокус на фигуре
   const raycaster = new THREE.Raycaster();
   const mouse = new THREE.Vector2();
   // Определение координат мыши в нормализованных координатах (-1 to 1)
@@ -244,22 +209,17 @@ const onClick = (event) => {
 
   // Пускайте луч из камеры в направлении указания мыши
   raycaster.setFromCamera(mouse, camera);
-
   // Получение массива объектов, с которыми пересекается луч
   const intersects = raycaster.intersectObjects(scene.children);
 
   // Если есть пересечение с объектами
   if (intersects.length > 0) {
-    // Найти объект
     const spriteIndex = intersects.findIndex(obj => sprites.indexOf(<THREE.Sprite>obj.object) !== -1);
     if (spriteIndex !== -1) {
 
       const spaceObject = intersects[spriteIndex].object.parent
       if (spaceObject) {
         showSpaceObjectDetail(spaceObject)
-        // Найти объект
-        // const planetIndex = intersects.findIndex(obj => planets.indexOf(<THREE.Mesh>obj.object) !== -1);
-        // if (planetIndex === -1) return;
         focusOn(spaceObject)
       }
 
@@ -292,13 +252,9 @@ const showSpaceObjectDetail = (object: THREE.Object3D) => {
 }
 
 const focusOn = (object: THREE.Object3D) => {
+  // Фокус на фигуре
   const position = object.position
   // Установка новой позиции камеры
-  // const newCameraPosition = position.clone().add(new THREE.Vector3(0, 0, 9_000_000));
-  // camera.position.copy(newCameraPosition);
-  // Направление, на которое смотрит камера
-  // const lookAtDirection = position.clone().sub(newCameraPosition).normalize();
-  // Установка нового вектора направления для камеры
   camera.lookAt(new THREE.Vector3().copy(position));
   // Установка новой цели (центра вращения) для controls
   controls.target.copy(position);
