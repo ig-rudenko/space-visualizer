@@ -20,7 +20,8 @@ class SpaceObjectData {
         public semiMajorAxis: number,
         public siderealTime: number,
         public meanRadius: number,
-        public obliquityToOrbit: number
+        public obliquityToOrbit: number,
+        public ephemeris: string = "",
     ) {
         this.inclinationSinus = Math.sin((Math.PI / 180) * this.inclination);
     }
@@ -43,6 +44,7 @@ class SpaceObjectData {
             matchOrZero(/\bPR\s*=\s*(\d.\d+E[-+]\d+)/),
             matchOrZero(/Mean Radius\s+\(km\)\s+=\s+(\d+\.\d+|\d+)/i) * 1000,
             matchOrZero(/Obliquity to orbit,\s+deg\s+=\s+(-?\d+\.\d+)/i),
+            ephemerisResult,
         );
     }
 

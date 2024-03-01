@@ -1,5 +1,15 @@
 import SpaceObjectData from "./spaceObject";
-import {Line, MathUtils, Mesh, Sprite, TextureLoader} from "three";
+import {
+    Line,
+    Loader,
+    MathUtils,
+    Mesh,
+    MeshBasicMaterial,
+    MeshStandardMaterial,
+    RingGeometry,
+    Sprite,
+    TextureLoader
+} from "three";
 import * as THREE from "three";
 
 class Visualizer {
@@ -15,7 +25,7 @@ class Visualizer {
         )
     }
 
-    getSphere(color: string, scale: number, textureName: string): Mesh {
+    getSphere(scale: number, textureName: string): Mesh {
         const texture = new TextureLoader().load(`images/textures/${textureName}.jpg`)
         const sphere = new THREE.Mesh(
             new THREE.SphereGeometry(this.planet.meanRadius * scale, 128, 128),
@@ -40,4 +50,17 @@ class Visualizer {
     }
 }
 
+function createRing(innerRadius: number, outerRadius: number, thetaSegments: number = 256, angle: number, textureName: string): Mesh<RingGeometry> {
+    const texture = new TextureLoader().load(`images/textures/${textureName}.jpg`)
+    const ring = new Mesh(
+        new RingGeometry(innerRadius, outerRadius, thetaSegments),
+        new MeshBasicMaterial({color: "#FFFFFF", side: THREE.DoubleSide, map: texture, transparent: true})
+    )
+    ring.rotation.x = Math.PI / 2 + (angle * Math.PI / 180)
+    ring.receiveShadow = true
+    return ring
+}
+
 export default Visualizer
+
+export {createRing}
