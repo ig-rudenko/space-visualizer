@@ -1,11 +1,9 @@
 import SpaceObjectData from "./spaceObject";
 import {
     Line,
-    Loader,
     MathUtils,
     Mesh,
     MeshBasicMaterial,
-    MeshStandardMaterial,
     RingGeometry,
     Sprite,
     TextureLoader
@@ -50,13 +48,14 @@ class Visualizer {
     }
 }
 
-function createRing(innerRadius: number, outerRadius: number, thetaSegments: number = 256, angle: number, textureName: string): Mesh<RingGeometry> {
+function createRing(innerRadius: number, outerRadius: number, thetaSegments: number = 256, inclination: number, angle: number, textureName: string): Mesh<RingGeometry> {
     const texture = new TextureLoader().load(`images/textures/${textureName}.jpg`)
     const ring = new Mesh(
         new RingGeometry(innerRadius, outerRadius, thetaSegments),
         new MeshBasicMaterial({color: "#FFFFFF", side: THREE.DoubleSide, map: texture, transparent: true})
     )
-    ring.rotation.x = Math.PI / 2 + (angle * Math.PI / 180)
+    ring.rotation.x = Math.PI / 2 + MathUtils.degToRad(inclination)
+    ring.rotation.z = MathUtils.degToRad(angle)
     ring.receiveShadow = true
     return ring
 }

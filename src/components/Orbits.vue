@@ -15,13 +15,13 @@
 
 <script setup lang="ts">
 import * as THREE from 'three'
-import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js'
 import {ref, onMounted, reactive} from 'vue'
 import SpaceObjectData from "../spaceObject"
 import Visualizer, {createRing} from "../visualizer";
 import {TextureLoader} from "three";
 import {SUN, EARTH, JUPITER, MARS, MERCURY, NEPTUNE, SATURN, URANUS, VENUS} from "../solarSystem";
 import ObjectsStorage from "../objectsStorage";
+import SceneMaker from "../scene";
 
 const orbitCanvas = ref(null);
 const about = reactive({
@@ -30,56 +30,28 @@ const about = reactive({
   showDesc: true,
 });
 
-const scene = new THREE.Scene();
-new THREE.TextureLoader().load("images/textures/skybox.jpg",
-    (t) => {
-      t.mapping = THREE.EquirectangularReflectionMapping;
-      t.colorSpace = THREE.DisplayP3ColorSpace;
-      scene.background = t;
-    })
-const MAX_DISTANCE = 950_000_000_000 * 20
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.001, MAX_DISTANCE);
-
-let controls: OrbitControls;
-let renderer: THREE.WebGLRenderer;
+const SCENE = new SceneMaker(1 / 555555555)
 
 const SpaceObjectStorage = new ObjectsStorage()
 const sprites: THREE.Sprite[] = []
-const SCALE = 1 / 555555555  // 1 / Астрономическая единица
+const MAX_DISTANCE = 950_000_000_000 * 20 * SCENE.scale
 
 
 onMounted(() => {
-  renderer = new THREE.WebGLRenderer({canvas: orbitCanvas.value});
-  renderer.setSize(window.innerWidth, window.innerHeight);
 
-  // Создали controls
-  // controls = <OrbitControls>(new AstroControls(camera, renderer.domElement));
-  controls = new OrbitControls(camera, renderer.domElement);
-  // controls.enableDamping = true;
+  SCENE.addSkybox("images/textures/skybox.jpg")
+  SCENE.createCamera(75, 0.001, MAX_DISTANCE)
+  SCENE.makeRender(orbitCanvas.value)
+  SCENE.makeControls(1.0, 1.2, 0.8)
 
-  controls.rotateSpeed = 1.0;
-  controls.zoomSpeed = 1.2;
-  controls.panSpeed = 0.8;
-
-  // controls.noZoom = false;
-  // controls.noPan = false;
-  // controls.staticMoving = true;
-  // controls.dynamicDampingFactor = 0.3;
-
-  // При желании можно по колдовать с настройками, а можно этого не делать.
-  // controls готов к работе и без этого.
-
-  // controls = new OrbitControls(camera, renderer.domElement);
-  // controls.enableDamping = true;
-
-  MERCURY.setScale(SCALE);
-  VENUS.setScale(SCALE);
-  EARTH.setScale(SCALE);
-  MARS.setScale(SCALE);
-  JUPITER.setScale(SCALE);
-  SATURN.setScale(SCALE);
-  URANUS.setScale(SCALE);
-  NEPTUNE.setScale(SCALE);
+  MERCURY.setScale(SCENE.scale);
+  VENUS.setScale(SCENE.scale);
+  EARTH.setScale(SCENE.scale);
+  MARS.setScale(SCENE.scale);
+  JUPITER.setScale(SCENE.scale);
+  SATURN.setScale(SCENE.scale);
+  URANUS.setScale(SCENE.scale);
+  NEPTUNE.setScale(SCENE.scale);
 
   const MercuryVisualizer = new Visualizer(MERCURY, "Меркурий")
   const VenusVisualizer = new Visualizer(VENUS, "Венера")
@@ -92,50 +64,50 @@ onMounted(() => {
 
   const animate = () => {
     requestAnimationFrame(animate);
-    controls.update();
-    renderer.render(scene, camera);
+    SCENE.controls.update();
+    SCENE.renderer.render(SCENE.scene, SCENE.camera);
 
     SpaceObjectStorage.spaceBodiesObjects.forEach(p => {
       let scaleFactor = 28;
       if (p.children.length > 0) {
         let sprite = p.children[0];
         // console.log(sprite)
-        let scale = new THREE.Vector3().subVectors(p.position, camera.position).length() / scaleFactor;
+        let scale = new THREE.Vector3().subVectors(p.position, SCENE.camera.position).length() / scaleFactor;
         sprite.scale.set(scale, scale, 1);
       }
     })
 
   };
 
-  scene.add(MercuryVisualizer.getOrbit("#838383"))
-  scene.add(VenusVisualizer.getOrbit("#f39932"))
-  scene.add(EarthVisualizer.getOrbit("#3289f3"))
-  scene.add(MarsVisualizer.getOrbit("#f33232"))
-  scene.add(JupiterMarsVisualizer.getOrbit("#d37811"))
-  scene.add(SaturnVisualizer.getOrbit("#f3b632"))
-  scene.add(UranusVisualizer.getOrbit("#3293f3"))
+  SCENE.scene.add(MercuryVisualizer.getOrbit("#838383"))
+  SCENE.scene.add(VenusVisualizer.getOrbit("#f39932"))
+  SCENE.scene.add(EarthVisualizer.getOrbit("#3289f3"))
+  SCENE.scene.add(MarsVisualizer.getOrbit("#f33232"))
+  SCENE.scene.add(JupiterMarsVisualizer.getOrbit("#d37811"))
+  SCENE.scene.add(SaturnVisualizer.getOrbit("#f3b632"))
+  SCENE.scene.add(UranusVisualizer.getOrbit("#3293f3"))
   const neptuneOrbit = NeptuneVisualizer.getOrbit("#3259f3")
-  scene.add(neptuneOrbit)
+  SCENE.scene.add(neptuneOrbit)
 
-  const mercurySphere = MercuryVisualizer.getSphere(SCALE, "mercury")
-  const venusSphere = VenusVisualizer.getSphere(SCALE, "venus")
-  const earthSphere = EarthVisualizer.getSphere(SCALE, "earth")
-  const marsSphere = MarsVisualizer.getSphere(SCALE, "mars")
-  const jupiterSphere = JupiterMarsVisualizer.getSphere(SCALE, "jupiter")
-  const saturnSphere = SaturnVisualizer.getSphere(SCALE, "saturn")
-  const uranusSphere = UranusVisualizer.getSphere(SCALE, "uranus")
-  const neptuneSphere = NeptuneVisualizer.getSphere(SCALE, "neptune")
+  const mercurySphere = MercuryVisualizer.getSphere(SCENE.scale, "mercury")
+  const venusSphere = VenusVisualizer.getSphere(SCENE.scale, "venus")
+  const earthSphere = EarthVisualizer.getSphere(SCENE.scale, "earth")
+  const marsSphere = MarsVisualizer.getSphere(SCENE.scale, "mars")
+  const jupiterSphere = JupiterMarsVisualizer.getSphere(SCENE.scale, "jupiter")
+  const saturnSphere = SaturnVisualizer.getSphere(SCENE.scale, "saturn")
+  const uranusSphere = UranusVisualizer.getSphere(SCENE.scale, "uranus")
+  const neptuneSphere = NeptuneVisualizer.getSphere(SCENE.scale, "neptune")
 
   // Добавление небесных тел
   addSun(SUN)
-  scene.add(mercurySphere)
-  scene.add(venusSphere)
-  scene.add(earthSphere)
-  scene.add(marsSphere)
-  scene.add(jupiterSphere)
-  scene.add(saturnSphere)
-  scene.add(uranusSphere)
-  scene.add(neptuneSphere)
+  SCENE.scene.add(mercurySphere)
+  SCENE.scene.add(venusSphere)
+  SCENE.scene.add(earthSphere)
+  SCENE.scene.add(marsSphere)
+  SCENE.scene.add(jupiterSphere)
+  SCENE.scene.add(saturnSphere)
+  SCENE.scene.add(uranusSphere)
+  SCENE.scene.add(neptuneSphere)
 
   SpaceObjectStorage.addSpaceObject(mercurySphere, MERCURY)
   SpaceObjectStorage.addSpaceObject(venusSphere, VENUS)
@@ -154,14 +126,14 @@ onMounted(() => {
   const saturnSprite = SaturnVisualizer.getSprite();
   const uranusSprite = UranusVisualizer.getSprite();
   const neptuneSprite = NeptuneVisualizer.getSprite();
-  scene.add(mercurySprite);
-  scene.add(venusSprite);
-  scene.add(earthSprite);
-  scene.add(marsSprite);
-  scene.add(jupiterSprite);
-  scene.add(saturnSprite);
-  scene.add(uranusSprite);
-  scene.add(neptuneSprite);
+  SCENE.scene.add(mercurySprite);
+  SCENE.scene.add(venusSprite);
+  SCENE.scene.add(earthSprite);
+  SCENE.scene.add(marsSprite);
+  SCENE.scene.add(jupiterSprite);
+  SCENE.scene.add(saturnSprite);
+  SCENE.scene.add(uranusSprite);
+  SCENE.scene.add(neptuneSprite);
 
   sprites.push(mercurySprite);
   sprites.push(venusSprite);
@@ -181,18 +153,11 @@ onMounted(() => {
   uranusSphere.add(uranusSprite);
   neptuneSphere.add(neptuneSprite);
 
-  // Кольца
-  saturnSphere.add(createRing(70_000_000 * SCALE, 136_500_000 * SCALE, 256, 23, "saturn-ring"))
+  // Кольца Сатурна
+  saturnSphere.add(createRing(85_000_000 * SCENE.scale, 136_500_000 * SCENE.scale, 256, SATURN.obliquityToOrbit, SATURN.trueAnomaly + SATURN.periapsisArgument + SATURN.omega, "saturn-ring"))
 
   // Настройка камеры
-  const boundingBox = new THREE.Box3().setFromObject(neptuneOrbit);
-  const orbitCenter = boundingBox.getCenter(new THREE.Vector3());
-
-  const maxOrbitSize = Math.max(boundingBox.max.x - boundingBox.min.x, boundingBox.max.y - boundingBox.min.y, boundingBox.max.z - boundingBox.min.z);
-  const distance = maxOrbitSize / Math.tan((Math.PI / 180) * (camera.fov / 2));
-
-  camera.position.set(orbitCenter.x, orbitCenter.y + 1_200_000_000_000 * SCALE, -distance / 2);
-  controls.target.copy(orbitCenter);
+  SCENE.setCameraToObject(neptuneOrbit)
 
   animate();
 
@@ -208,9 +173,9 @@ const onClick = (event) => {
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
   // Пускайте луч из камеры в направлении указания мыши
-  raycaster.setFromCamera(mouse, camera);
+  raycaster.setFromCamera(mouse, SCENE.camera);
   // Получение массива объектов, с которыми пересекается луч
-  const intersects = raycaster.intersectObjects(scene.children);
+  const intersects = raycaster.intersectObjects(SCENE.scene.children);
 
   // Если есть пересечение с объектами
   if (intersects.length > 0) {
@@ -220,7 +185,7 @@ const onClick = (event) => {
       const spaceObject = intersects[spriteIndex].object.parent
       if (spaceObject) {
         showSpaceObjectDetail(spaceObject)
-        focusOn(spaceObject)
+        SCENE.focusOn(spaceObject)
       }
 
     }
@@ -229,7 +194,7 @@ const onClick = (event) => {
     const spaceObjectIndex = intersects.findIndex(obj => SpaceObjectStorage.spaceBodiesObjects.indexOf(<THREE.Mesh>obj.object) !== -1);
     if (spaceObjectIndex !== -1) {
       showSpaceObjectDetail(intersects[spaceObjectIndex].object)
-      focusOn(intersects[spaceObjectIndex].object)
+      SCENE.focusOn(intersects[spaceObjectIndex].object)
     }
   }
 
@@ -251,30 +216,22 @@ const showSpaceObjectDetail = (object: THREE.Object3D) => {
   }
 }
 
-const focusOn = (object: THREE.Object3D) => {
-  // Фокус на фигуре
-  const position = object.position
-  // Установка новой позиции камеры
-  camera.lookAt(new THREE.Vector3().copy(position));
-  // Установка новой цели (центра вращения) для controls
-  controls.target.copy(position);
-}
 
 const addSun = (sun: SpaceObjectData) => {
   // Создание сферы
   const texture = new TextureLoader().load(`images/textures/sun.jpg`)
-  const sphereGeometry = new THREE.SphereGeometry(sun.meanRadius * SCALE, 128, 128);
+  const sphereGeometry = new THREE.SphereGeometry(sun.meanRadius * SCENE.scale, 128, 128);
   const sphereMaterial = new THREE.MeshBasicMaterial({map: texture});
   const SunSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
   SunSphere.name = "Солнце"
-  scene.add(SunSphere);
+  SCENE.scene.add(SunSphere);
   // Создаем источник света
   const light = new THREE.PointLight(0xffffff, 10, MAX_DISTANCE, 0.1);
-  scene.add(light);
+  SCENE.scene.add(light);
 
   // Создаем свет для темных зон
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.02); // Небольшая подсветка для всех частей сцены
-  scene.add(ambientLight);
+  SCENE.scene.add(ambientLight);
 
   SpaceObjectStorage.addSpaceObject(SunSphere, SUN)
 }
@@ -302,8 +259,13 @@ canvas {
   font-family: monospace;
 }
 
+.about:hover {
+  background-color: rgba(105, 105, 105, 0.78);
+  border-radius: 20px;
+}
+
 .toggle-button {
-  margin-bottom: 10px;
+  margin: 10px 0;
 }
 
 </style>
