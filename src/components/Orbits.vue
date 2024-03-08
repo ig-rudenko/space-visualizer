@@ -1,6 +1,6 @@
 <template>
   <div class="relative">
-    <div class="absolute about">
+    <div class="absolute container">
       <h2 style="margin: 0;">{{ about.planetName }}</h2>
       <div v-if="about.description.length > 0">
         <button class="toggle-button" @click="about.showDesc = !about.showDesc">
@@ -9,6 +9,14 @@
         <div v-if="about.showDesc" v-html="about.description"></div>
       </div>
     </div>
+
+    <!-- Настройки  -->
+    <div class="absolute container settings">
+      <button class="toggle-button" @click="toggleOrbits">
+        {{ options.showOrbits ? 'Скрыть орбиты' : 'Показать орбиты' }}
+      </button>
+    </div>
+
     <canvas ref="orbitCanvas"></canvas>
   </div>
 </template>
@@ -19,7 +27,7 @@ import {ref, onMounted, reactive} from 'vue'
 import SpaceObjectData from "../spaceObject"
 import Visualizer, {createRing} from "../visualizer";
 import {TextureLoader} from "three";
-import {SUN, EARTH, JUPITER, MARS, MERCURY, NEPTUNE, SATURN, URANUS, VENUS} from "../solarSystem";
+import {SUN, EARTH, JUPITER, MARS, MERCURY, NEPTUNE, SATURN, URANUS, VENUS, MOON} from "../solarSystem";
 import ObjectsStorage from "../objectsStorage";
 import SceneMaker from "../scene";
 
@@ -28,6 +36,9 @@ const about = reactive({
   planetName: "",
   description: "",
   showDesc: true,
+});
+const options = reactive({
+  showOrbits: true,
 });
 
 const SCENE = new SceneMaker(1 / 555555555)
@@ -52,6 +63,8 @@ onMounted(() => {
   SATURN.setScale(SCENE.scale);
   URANUS.setScale(SCENE.scale);
   NEPTUNE.setScale(SCENE.scale);
+  MOON.setScale(SCENE.scale)
+  MOON.basePoint = EARTH.getCurrentPosition()
 
   const MercuryVisualizer = new Visualizer(MERCURY, "Меркурий")
   const VenusVisualizer = new Visualizer(VENUS, "Венера")
@@ -61,6 +74,7 @@ onMounted(() => {
   const SaturnVisualizer = new Visualizer(SATURN, "Сатурн")
   const UranusVisualizer = new Visualizer(URANUS, "Уран")
   const NeptuneVisualizer = new Visualizer(NEPTUNE, "Нептун")
+  const MoonVisualizer = new Visualizer(MOON, "Луна")
 
   const animate = () => {
     requestAnimationFrame(animate);
@@ -70,25 +84,33 @@ onMounted(() => {
     SpaceObjectStorage.spaceBodiesObjects.forEach(p => {
       let scaleFactor = 28;
       if (p.children.length > 0) {
-        let sprite = p.children[0];
-        // console.log(sprite)
-        let scale = new THREE.Vector3().subVectors(p.position, SCENE.camera.position).length() / scaleFactor;
-        sprite.scale.set(scale, scale, 1);
+        for (let i = 0; i < p.children.length; i++) {
+          if (p.children[i].type === "Sprite") {
+            let scale = new THREE.Vector3().subVectors(p.position, SCENE.camera.position).length() / scaleFactor;
+            p.children[i].scale.set(scale, scale, 1);
+            return
+          }
+        }
       }
     })
 
   };
 
-  SCENE.scene.add(MercuryVisualizer.getOrbit("#838383"))
-  SCENE.scene.add(VenusVisualizer.getOrbit("#f39932"))
-  SCENE.scene.add(EarthVisualizer.getOrbit("#3289f3"))
-  SCENE.scene.add(MarsVisualizer.getOrbit("#f33232"))
-  SCENE.scene.add(JupiterMarsVisualizer.getOrbit("#d37811"))
-  SCENE.scene.add(SaturnVisualizer.getOrbit("#f3b632"))
-  SCENE.scene.add(UranusVisualizer.getOrbit("#3293f3"))
+  // Орбиты
+  const mercuryOrbit = MercuryVisualizer.getOrbit("#838383")
+  const venusOrbit = VenusVisualizer.getOrbit("#f39932")
+  const earthOrbit = EarthVisualizer.getOrbit("#3289f3")
+  const marsOrbit = MarsVisualizer.getOrbit("#f33232")
+  const jupiterOrbit = JupiterMarsVisualizer.getOrbit("#d37811")
+  const saturnVOrbit = SaturnVisualizer.getOrbit("#f3b632")
+  const uranusVOrbit = UranusVisualizer.getOrbit("#3293f3")
   const neptuneOrbit = NeptuneVisualizer.getOrbit("#3259f3")
-  SCENE.scene.add(neptuneOrbit)
+  const moonOrbit = MoonVisualizer.getOrbit("#818181")
+  SCENE.scene.add(mercuryOrbit, venusOrbit, earthOrbit, marsOrbit, jupiterOrbit, saturnVOrbit, uranusVOrbit, neptuneOrbit, moonOrbit)
+  SpaceObjectStorage.addOrbits(mercuryOrbit, venusOrbit, earthOrbit, marsOrbit, jupiterOrbit, saturnVOrbit, uranusVOrbit, neptuneOrbit, moonOrbit)
 
+  // Планеты
+  const sunSphere = addSun(SUN)
   const mercurySphere = MercuryVisualizer.getSphere(SCENE.scale, "mercury")
   const venusSphere = VenusVisualizer.getSphere(SCENE.scale, "venus")
   const earthSphere = EarthVisualizer.getSphere(SCENE.scale, "earth")
@@ -97,18 +119,10 @@ onMounted(() => {
   const saturnSphere = SaturnVisualizer.getSphere(SCENE.scale, "saturn")
   const uranusSphere = UranusVisualizer.getSphere(SCENE.scale, "uranus")
   const neptuneSphere = NeptuneVisualizer.getSphere(SCENE.scale, "neptune")
-
+  // Спутники
+  const moonSphere = MoonVisualizer.getSphere(SCENE.scale, "moon")
   // Добавление небесных тел
-  addSun(SUN)
-  SCENE.scene.add(mercurySphere)
-  SCENE.scene.add(venusSphere)
-  SCENE.scene.add(earthSphere)
-  SCENE.scene.add(marsSphere)
-  SCENE.scene.add(jupiterSphere)
-  SCENE.scene.add(saturnSphere)
-  SCENE.scene.add(uranusSphere)
-  SCENE.scene.add(neptuneSphere)
-
+  SCENE.scene.add(mercurySphere, venusSphere, earthSphere, marsSphere, jupiterSphere, saturnSphere, uranusSphere, neptuneSphere, moonSphere)
   SpaceObjectStorage.addSpaceObject(mercurySphere, MERCURY)
   SpaceObjectStorage.addSpaceObject(venusSphere, VENUS)
   SpaceObjectStorage.addSpaceObject(earthSphere, EARTH)
@@ -117,7 +131,8 @@ onMounted(() => {
   SpaceObjectStorage.addSpaceObject(saturnSphere, SATURN)
   SpaceObjectStorage.addSpaceObject(uranusSphere, URANUS)
   SpaceObjectStorage.addSpaceObject(neptuneSphere, NEPTUNE)
-
+  SpaceObjectStorage.addSpaceObject(moonSphere, MOON)
+  // Спрайты
   const mercurySprite = EarthVisualizer.getSprite();
   const venusSprite = EarthVisualizer.getSprite();
   const earthSprite = EarthVisualizer.getSprite();
@@ -126,24 +141,9 @@ onMounted(() => {
   const saturnSprite = SaturnVisualizer.getSprite();
   const uranusSprite = UranusVisualizer.getSprite();
   const neptuneSprite = NeptuneVisualizer.getSprite();
-  SCENE.scene.add(mercurySprite);
-  SCENE.scene.add(venusSprite);
-  SCENE.scene.add(earthSprite);
-  SCENE.scene.add(marsSprite);
-  SCENE.scene.add(jupiterSprite);
-  SCENE.scene.add(saturnSprite);
-  SCENE.scene.add(uranusSprite);
-  SCENE.scene.add(neptuneSprite);
-
-  sprites.push(mercurySprite);
-  sprites.push(venusSprite);
-  sprites.push(earthSprite);
-  sprites.push(marsSprite);
-  sprites.push(jupiterSprite);
-  sprites.push(saturnSprite);
-  sprites.push(uranusSprite);
-  sprites.push(neptuneSprite);
-
+  const moonSprite = MoonVisualizer.getSprite();
+  SCENE.scene.add(mercurySprite, venusSprite, earthSprite, marsSprite, jupiterSprite, saturnSprite, uranusSprite, neptuneSprite, moonSprite);
+  sprites.push(mercurySprite, venusSprite, earthSprite, marsSprite, jupiterSprite, saturnSprite, uranusSprite, neptuneSprite, moonSprite);
   mercurySphere.add(mercurySprite);
   venusSphere.add(venusSprite);
   earthSphere.add(earthSprite);
@@ -152,12 +152,14 @@ onMounted(() => {
   saturnSphere.add(saturnSprite);
   uranusSphere.add(uranusSprite);
   neptuneSphere.add(neptuneSprite);
+  moonSphere.add(moonSprite);
 
   // Кольца Сатурна
   saturnSphere.add(createRing(85_000_000 * SCENE.scale, 136_500_000 * SCENE.scale, 256, SATURN.obliquityToOrbit, SATURN.trueAnomaly + SATURN.periapsisArgument + SATURN.omega, "saturn-ring"))
 
   // Настройка камеры
   SCENE.setCameraToObject(neptuneOrbit)
+  SCENE.focusOn(sunSphere)
 
   animate();
 
@@ -217,7 +219,7 @@ const showSpaceObjectDetail = (object: THREE.Object3D) => {
 }
 
 
-const addSun = (sun: SpaceObjectData) => {
+const addSun = (sun: SpaceObjectData): THREE.Mesh => {
   // Создание сферы
   const texture = new TextureLoader().load(`images/textures/sun.jpg`)
   const sphereGeometry = new THREE.SphereGeometry(sun.meanRadius * SCENE.scale, 128, 128);
@@ -226,7 +228,7 @@ const addSun = (sun: SpaceObjectData) => {
   SunSphere.name = "Солнце"
   SCENE.scene.add(SunSphere);
   // Создаем источник света
-  const light = new THREE.PointLight(0xffffff, 10, MAX_DISTANCE, 0.1);
+  const light = new THREE.PointLight(0xffffff, 6, MAX_DISTANCE, 0.1);
   SCENE.scene.add(light);
 
   // Создаем свет для темных зон
@@ -234,6 +236,17 @@ const addSun = (sun: SpaceObjectData) => {
   SCENE.scene.add(ambientLight);
 
   SpaceObjectStorage.addSpaceObject(SunSphere, SUN)
+  return SunSphere
+}
+
+const toggleOrbits = () => {
+  if (options.showOrbits) {
+    SCENE.scene.remove(...SpaceObjectStorage.orbits)
+    options.showOrbits = false;
+  } else {
+    SCENE.scene.add(...SpaceObjectStorage.orbits)
+    options.showOrbits = true;
+  }
 }
 
 </script>
@@ -251,7 +264,7 @@ canvas {
   position: absolute;
 }
 
-.about {
+.container {
   padding: 1.2rem;
   color: snow;
   font-size: 0.7rem;
@@ -259,7 +272,7 @@ canvas {
   font-family: monospace;
 }
 
-.about:hover {
+.container:hover {
   background-color: rgba(105, 105, 105, 0.78);
   border-radius: 20px;
 }
@@ -268,4 +281,7 @@ canvas {
   margin: 10px 0;
 }
 
+.settings {
+  right: 0;
+}
 </style>

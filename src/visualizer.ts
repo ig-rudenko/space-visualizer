@@ -3,10 +3,10 @@ import {
     Line,
     MathUtils,
     Mesh,
-    MeshBasicMaterial,
+    MeshBasicMaterial, Object3D,
     RingGeometry,
     Sprite,
-    TextureLoader
+    TextureLoader, Vector3
 } from "three";
 import * as THREE from "three";
 
@@ -14,7 +14,8 @@ class Visualizer {
     constructor(
         public planet: SpaceObjectData,
         public name: string,
-    ) {}
+    ) {
+    }
 
     getOrbit(color: string): Line {
         return new THREE.Line(

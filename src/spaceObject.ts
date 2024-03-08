@@ -4,7 +4,7 @@ import {Vector3} from "three";
 class SpaceObjectData {
     private _basePoint: [number, number, number] = [0, 0, 0];
     private _scale: number = 1;
-    private inclinationSinus: number;
+    private readonly inclinationSinus: number;
 
     constructor(
         public eccentricity: number,
@@ -42,7 +42,7 @@ class SpaceObjectData {
             matchOrZero(/\bTA\s*=\s*(\d.\d+E[-+]\d+)/),
             matchOrZero(/\bA\s*=\s*-?(\d.\d+E[-+]\d+)/) * 1000,
             matchOrZero(/\bPR\s*=\s*(\d.\d+E[-+]\d+)/),
-            matchOrZero(/Mean Radius\s+\(km\)\s+=\s+(\d+\.\d+|\d+)/i) * 1000,
+            matchOrZero(/Mean Radius.+?=\s+(\d+\.\d+|\d+)/i) * 1000,
             matchOrZero(/Obliquity to orbit,\s+deg\s+=\s+(-?\d+\.\d+)/i),
             ephemerisResult,
         );
@@ -68,14 +68,17 @@ class SpaceObjectData {
         const orbitData: Vector3[] = [];
         const point_angle = 360 / numPoints
         for (let t = 0; t <= 360; t += point_angle) {
-            const [xi, yi, zi] = this.getPoint(t);
-            orbitData.push(new Vector3(xi, yi, zi));
+            orbitData.push(new Vector3(...this.getPoint(t)));
         }
         return orbitData;
     }
 
-    setBasePoint(basePoint: [number, number, number]): void {
+    set basePoint(basePoint: [number, number, number]) {
         this._basePoint = basePoint;
+    }
+
+    get basePoint(): [number, number, number] {
+        return this._basePoint;
     }
 
     setScale(value: number): void {
@@ -93,9 +96,9 @@ class SpaceObjectData {
         const fromI = angle - this.omega + 90;
         const zi = r * -Math.cos((Math.PI / 180) * fromI) * this.inclinationSinus;
         return [
-            (xi + this._basePoint[0]) * this._scale,
-            (zi + this._basePoint[1]) * this._scale,
-            (yi + this._basePoint[2]) * this._scale,
+            (xi * this._scale) + this.basePoint[0],
+            (zi * this._scale) + this.basePoint[1],
+            (yi * this._scale) + this.basePoint[2],
         ];
     }
 

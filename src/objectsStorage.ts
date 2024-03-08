@@ -3,6 +3,7 @@ import {Object3D} from "three";
 
 class ObjectsStorage {
     private _allObjects: Object3D[] = []
+    private _orbits: Object3D[] = []
     private _spaceBodiesObjects: { body: Object3D, data: SpaceObjectData }[] = []
 
     addSpaceObject(object: Object3D, objectData: SpaceObjectData): void {
@@ -15,12 +16,21 @@ class ObjectsStorage {
         this._allObjects.push(object)
     }
 
-    addObject(object: Object3D): void {
-        this._allObjects.push(object)
+    addObjects(...objects: Object3D[]): void {
+        this._allObjects.push(...objects)
     }
 
     get allObjects(): Object3D[] {
         return this._allObjects
+    }
+
+    addOrbits(...objects: Object3D[]): void {
+        this._orbits.push(...objects)
+        this._allObjects.push(...objects)
+    }
+
+    get orbits(): Object3D[] {
+        return this._orbits
     }
 
     get spaceBodiesObjects(): Object3D[] {
