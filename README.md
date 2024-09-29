@@ -6,10 +6,10 @@
 
 <div>
   <a href="https://threejs.org/"><img height="48" src="/docs/img/three.js.png"></a>
-  <img height="48" src="/docs/img/ts.svg">
-  <img height="48" src="/docs/img/vue.svg">
-  <img height="48" src="/docs/img/vite.svg">
-  <img height="48" src="/docs/img/terraform.svg">
+  <a href="https://www.typescriptlang.org/"><img height="48" src="/docs/img/ts.svg"></a>
+  <a href="https://vuejs.org/"><img height="48" src="/docs/img/vue.svg"></a>
+  <a href="https://vitejs.dev/"><img height="48" src="/docs/img/vite.svg"></a>
+  <a href="https://www.terraform.io/"><img height="48" src="/docs/img/terraform.svg"></a>
 </div>
 
 
