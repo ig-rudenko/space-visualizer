@@ -1,6 +1,17 @@
 ## Моделирование солнечной системы
 
-Все размеры и расстояния совпадают с реальными
+Все размеры и расстояния совпадают с реальными.
+
+---
+
+<div>
+  <a href="https://threejs.org/"><img height="48" src="/docs/img/three.js.png"></a>
+  <img height="48" src="/docs/img/ts.svg">
+  <img height="48" src="/docs/img/vue.svg">
+  <img height="48" src="/docs/img/vite.svg">
+  <img height="48" src="/docs/img/terraform.svg">
+</div>
+
 
 ![img.png](docs/img/img.png)
 ![img_1.png](docs/img/img_1.png)
