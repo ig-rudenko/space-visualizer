@@ -41,6 +41,10 @@ class ObjectsStorage {
         return bodies
     }
 
+    get spaceBodies(): { body: Object3D, data: SpaceObjectData }[] {
+        return this._spaceBodiesObjects
+    }
+
     getSpaceObjectData(object: Object3D): SpaceObjectData | null {
         for (const spaceObject of this._spaceBodiesObjects) {
             if (object == spaceObject.body) {

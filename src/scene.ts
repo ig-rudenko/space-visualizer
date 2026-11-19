@@ -17,7 +17,7 @@ class SceneMaker {
         new THREE.TextureLoader().load(imageURL,
             (t) => {
                 t.mapping = THREE.EquirectangularReflectionMapping;
-                t.colorSpace = THREE.DisplayP3ColorSpace;
+                t.colorSpace = THREE.SRGBColorSpace;
                 this.scene.background = t;
             })
     }
@@ -33,11 +33,16 @@ class SceneMaker {
 
     makeControls(rotateSpeed: number, zoomSpeed: number, panSpeed: number): void {
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-        // controls.enableDamping = true;
+        this.controls.enablePan = true;
+        this.controls.screenSpacePanning = true;
         this.controls.rotateSpeed = rotateSpeed;
         this.controls.zoomSpeed = zoomSpeed;
         this.controls.panSpeed = panSpeed;
-
+        this.controls.mouseButtons = {
+            LEFT: THREE.MOUSE.ROTATE,
+            MIDDLE: THREE.MOUSE.DOLLY,
+            RIGHT: THREE.MOUSE.PAN
+        };
     }
 
     focusOn(object: THREE.Object3D): void {

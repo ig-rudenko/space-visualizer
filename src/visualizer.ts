@@ -3,10 +3,10 @@ import {
     Line,
     MathUtils,
     Mesh,
-    MeshBasicMaterial, Object3D,
+    MeshBasicMaterial,
     RingGeometry,
     Sprite,
-    TextureLoader, Vector3
+    TextureLoader,
 } from "three";
 import * as THREE from "three";
 
@@ -30,7 +30,8 @@ class Visualizer {
             new THREE.SphereGeometry(this.planet.meanRadius * scale, 128, 128),
             new THREE.MeshStandardMaterial({map: texture, transparent: false})
         )
-        sphere.rotation.z = -MathUtils.degToRad(this.planet.obliquityToOrbit)
+        sphere.rotation.order = 'ZYX';
+        sphere.rotation.z = -MathUtils.degToRad(this.planet.obliquityToOrbit);
         sphere.position.set(...this.planet.getCurrentPosition());
         sphere.name = this.name;
         return sphere;

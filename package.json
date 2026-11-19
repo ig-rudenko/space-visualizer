@@ -1,10 +1,10 @@
 {
-  "name": "untitled",
+  "name": "space-visualizer",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.2",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 0.0.0.0 --port 8080",
     "build": "vite build",
     "preview": "vite preview",
     "predeploy": "npm run build",
@@ -12,13 +12,13 @@
   },
   "dependencies": {
     "@seregpie/three.text-sprite": "^3.2.0",
-    "three": "^0.161.0",
-    "vue": "^3.4.19"
+    "three": "^0.187.0",
+    "vue": "^3.5.45"
   },
   "devDependencies": {
-    "@types/three": "^0.161.2",
-    "@vitejs/plugin-vue": "^5.0.4",
-    "gh-pages": "^6.1.1",
-    "vite": "^5.3.5"
+    "@types/three": "^0.187.0",
+    "@vitejs/plugin-vue": "^6.0.10",
+    "gh-pages": "^6.3.0",
+    "vite": "^8.3.6"
   }
 }
